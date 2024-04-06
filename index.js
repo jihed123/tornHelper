@@ -101,24 +101,71 @@ let priceData = {
 // Lookup the price of an item by its name
 
 // console.log(itemsAndPrices[itemName]); // Outputs: 10.99
+let numberOfAPIRequests = 0;
+let maxAPIRequestsPerMinute = 99;
+let lastResetTime = Date.now();
+
+async function fetchPriceData(itemid) {
+	// TODO: improve rate limiting to be more accurate
+	const currentTime = Date.now();
+	const elapsedTimeSinceReset = currentTime - lastResetTime;
+
+	if (elapsedTimeSinceReset >= 60000) {
+		// 60000 milliseconds = 1 minute
+		numberOfAPIRequests = 0;
+		lastResetTime = currentTime;
+	}
+
+	if (numberOfAPIRequests >= maxAPIRequestsPerMinute) {
+		console.log("Max API requests reached");
+		return;
+	}
+
+	numberOfAPIRequests++;
+
+	try {
+		const response = await fetch(
+			`https://api.torn.com/market/${itemid}?selections=bazaar,itemmarket&key=${API_KEY}`
+		);
+		const data = await response.json();
+
+		if (data.itemmarket[0].cost < priceData[itemid]) {
+			console.log(data.itemmarket[0].cost);
+			console.log(`Profit: ${priceData[itemid] - data.itemmarket[0].cost}$`);
+		}
+
+		if (data.bazaar[0].cost > priceData[itemid]) {
+			console.log(data.bazaar[0].cost);
+			console.log(`Profit: ${priceData[itemid] - data.bazaar[0].cost}$`);
+		}
+	} catch (error) {
+		console.error("Error fetching price data:", error);
+	}
+}
 
 let itemToLookup = 51;
+fetchPriceData(itemToLookup);
 
-fetch(
-	`https://api.torn.com/market/${itemToLookup}?selections=itemmarket&key=${API_KEY}`
-)
-	.then((response) => {
-		if (!response.ok) {
-			throw new Error("Network response was not ok");
-		}
-		return response.json();
-	})
-	.then((data) => {
-		console.log(data.itemmarket[0].cost);
-	})
-	.catch((error) => {
-		console.error("There was a problem with the fetch operation:", error);
-	});
+// fetch(
+// 	`https://api.torn.com/market/${itemToLookup}?selections=itemmarket&key=${API_KEY}`
+// )
+// 	.then((response) => {
+// 		if (!response.ok) {
+// 			throw new Error("Network response was not ok");
+// 		}
+// 		return response.json();
+// 	})
+// 	.then((data) => {
+// 		console.log(data.itemmarket[0].cost);
+// 		if (data.itemmarket[0].cost < priceData[itemToLookup]) {
+// 			console.log("Buy");
+// 		} else {
+// 			console.log("Don't buy");
+// 		}
+// 	})
+// 	.catch((error) => {
+// 		console.error("There was a problem with the fetch operation:", error);
+// 	});
 
 const dataExemple = {
 	itemmarket: [
