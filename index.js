@@ -1,7 +1,8 @@
 import fetch from "node-fetch";
 import dotenv from "dotenv";
 dotenv.config();
-const API_KEY = process.env.API_KEY;
+// const API_KEY = process.env.API_KEY;
+let API_KEY = "";
 
 const priceData = {
 	1: 50,
@@ -127,10 +128,13 @@ function saveData() {
 // Function to retrieve data from browser.storage.local and initialize variables
 function retrieveData() {
 	browser.storage.local
-		.get(["numberOfAPIRequests", "lastResetTime"])
+		.get(["numberOfAPIRequests", "lastResetTime", "apiKey"])
 		.then((result) => {
 			if (result.numberOfAPIRequests !== undefined) {
 				numberOfAPIRequests = result.numberOfAPIRequests;
+			}
+			if (result.apiKey !== undefined) {
+				API_KEY = result.apiKey;
 			}
 
 			if (result.lastResetTime !== undefined) {
@@ -152,6 +156,11 @@ retrieveData();
 
 async function fetchPriceData(itemid) {
 	// TODO: improve rate limiting to be more accurate
+	if (API_KEY === "") {
+		console.error("API Key not set");
+		return;
+	}
+
 	const currentTime = Date.now();
 	const elapsedTimeSinceReset = currentTime - lastResetTime;
 
@@ -167,13 +176,12 @@ async function fetchPriceData(itemid) {
 	}
 
 	numberOfAPIRequests++;
-
+	let bool = false;
 	try {
 		const response = await fetch(
 			`https://api.torn.com/market/${itemid}?selections=bazaar,itemmarket&key=${API_KEY}`
 		);
 		const data = await response.json();
-		let bool = false;
 
 		if (data.itemmarket[0].cost < priceData[itemid]) {
 			bool = true;
@@ -191,6 +199,8 @@ async function fetchPriceData(itemid) {
 	}
 
 	saveData();
+
+	return bool;
 }
 
 let itemToLookup = 51;
