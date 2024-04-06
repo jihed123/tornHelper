@@ -173,14 +173,17 @@ async function fetchPriceData(itemid) {
 			`https://api.torn.com/market/${itemid}?selections=bazaar,itemmarket&key=${API_KEY}`
 		);
 		const data = await response.json();
+		let bool = false;
 
 		if (data.itemmarket[0].cost < priceData[itemid]) {
-			console.log(data.itemmarket[0].cost);
+			bool = true;
+			console.log("item market cost:", data.itemmarket[0].cost);
 			console.log(`Profit: ${priceData[itemid] - data.itemmarket[0].cost}$`);
 		}
 
 		if (data.bazaar[0].cost > priceData[itemid]) {
-			console.log(data.bazaar[0].cost);
+			bool = true;
+			console.log("bazaar cost:", data.bazaar[0].cost);
 			console.log(`Profit: ${priceData[itemid] - data.bazaar[0].cost}$`);
 		}
 	} catch (error) {
