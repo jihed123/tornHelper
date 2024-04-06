@@ -2,7 +2,8 @@ import fetch from "node-fetch";
 import dotenv from "dotenv";
 dotenv.config();
 const API_KEY = process.env.API_KEY;
-let priceData = {
+
+const priceData = {
 	1: 50,
 	2: 130,
 	3: 250,
@@ -101,9 +102,53 @@ let priceData = {
 // Lookup the price of an item by its name
 
 // console.log(itemsAndPrices[itemName]); // Outputs: 10.99
+const maxAPIRequestsPerMinute = 99;
 let numberOfAPIRequests = 0;
-let maxAPIRequestsPerMinute = 99;
 let lastResetTime = Date.now();
+// Function to save data to storage.local
+// Function to save data to browser.storage.local
+function saveData() {
+	browser.storage.local
+		.set({
+			numberOfAPIRequests: numberOfAPIRequests,
+			lastResetTime: lastResetTime,
+		})
+		.then(() => {
+			console.log("Data saved:", {
+				numberOfAPIRequests: numberOfAPIRequests,
+				lastResetTime: lastResetTime,
+			});
+		})
+		.catch((error) => {
+			console.error("Error saving data:", error);
+		});
+}
+
+// Function to retrieve data from browser.storage.local and initialize variables
+function retrieveData() {
+	browser.storage.local
+		.get(["numberOfAPIRequests", "lastResetTime"])
+		.then((result) => {
+			if (result.numberOfAPIRequests !== undefined) {
+				numberOfAPIRequests = result.numberOfAPIRequests;
+			}
+
+			if (result.lastResetTime !== undefined) {
+				lastResetTime = result.lastResetTime;
+			}
+			console.log("Retrieved data:", {
+				numberOfAPIRequests: numberOfAPIRequests,
+
+				lastResetTime: lastResetTime,
+			});
+		})
+		.catch((error) => {
+			console.error("Error retrieving data:", error);
+		});
+}
+
+// Call retrieveData() when the extension is loaded to initialize variables
+retrieveData();
 
 async function fetchPriceData(itemid) {
 	// TODO: improve rate limiting to be more accurate
@@ -141,133 +186,28 @@ async function fetchPriceData(itemid) {
 	} catch (error) {
 		console.error("Error fetching price data:", error);
 	}
+
+	saveData();
 }
 
 let itemToLookup = 51;
-fetchPriceData(itemToLookup);
-
-// fetch(
-// 	`https://api.torn.com/market/${itemToLookup}?selections=itemmarket&key=${API_KEY}`
-// )
-// 	.then((response) => {
-// 		if (!response.ok) {
-// 			throw new Error("Network response was not ok");
-// 		}
-// 		return response.json();
-// 	})
-// 	.then((data) => {
-// 		console.log(data.itemmarket[0].cost);
-// 		if (data.itemmarket[0].cost < priceData[itemToLookup]) {
-// 			console.log("Buy");
-// 		} else {
-// 			console.log("Don't buy");
-// 		}
-// 	})
-// 	.catch((error) => {
-// 		console.error("There was a problem with the fetch operation:", error);
-// 	});
+// fetchPriceData(itemToLookup);
+// check window url
+// if (window.location.href.includes('item.php')) {
 
 const dataExemple = {
+	bazaar: [
+		{
+			ID: 46813022,
+			cost: 800,
+			quantity: 3,
+		},
+	],
 	itemmarket: [
-		{ ID: 221072684, cost: 80, quantity: 1 },
-		{ ID: 221072687, cost: 80, quantity: 1 },
-		{ ID: 221074033, cost: 100, quantity: 1 },
-		{ ID: 221074032, cost: 100, quantity: 1 },
-		{ ID: 221074031, cost: 100, quantity: 1 },
-		{ ID: 221074030, cost: 100, quantity: 1 },
-		{ ID: 221074029, cost: 100, quantity: 1 },
-		{ ID: 221071066, cost: 100, quantity: 1 },
-		{ ID: 221038744, cost: 350, quantity: 1 },
-		{ ID: 221038743, cost: 350, quantity: 1 },
-		{ ID: 221038742, cost: 350, quantity: 1 },
-		{ ID: 221038745, cost: 350, quantity: 1 },
-		{ ID: 221038746, cost: 350, quantity: 1 },
-		{ ID: 221038749, cost: 350, quantity: 1 },
-		{ ID: 221038747, cost: 350, quantity: 1 },
-		{ ID: 221038748, cost: 350, quantity: 1 },
-		{ ID: 221038750, cost: 350, quantity: 1 },
-		{ ID: 221038751, cost: 350, quantity: 1 },
-		{ ID: 221038752, cost: 350, quantity: 1 },
-		{ ID: 221038753, cost: 350, quantity: 1 },
-		{ ID: 221038754, cost: 350, quantity: 1 },
-		{ ID: 221038755, cost: 350, quantity: 1 },
-		{ ID: 221038756, cost: 350, quantity: 1 },
-		{ ID: 221038757, cost: 350, quantity: 1 },
-		{ ID: 221038758, cost: 350, quantity: 1 },
-		{ ID: 221038759, cost: 350, quantity: 1 },
-		{ ID: 221038760, cost: 350, quantity: 1 },
-		{ ID: 221038761, cost: 350, quantity: 1 },
-		{ ID: 221038762, cost: 350, quantity: 1 },
-		{ ID: 221038763, cost: 350, quantity: 1 },
-		{ ID: 221038764, cost: 350, quantity: 1 },
-		{ ID: 221038765, cost: 350, quantity: 1 },
-		{ ID: 221038766, cost: 350, quantity: 1 },
-		{ ID: 221038767, cost: 350, quantity: 1 },
-		{ ID: 221038768, cost: 350, quantity: 1 },
-		{ ID: 221038769, cost: 350, quantity: 1 },
-		{ ID: 221007234, cost: 385, quantity: 1 },
-		{ ID: 221007236, cost: 385, quantity: 1 },
-		{ ID: 221007235, cost: 385, quantity: 1 },
-		{ ID: 220926369, cost: 389, quantity: 1 },
-		{ ID: 220926365, cost: 389, quantity: 1 },
-		{ ID: 220926366, cost: 389, quantity: 1 },
-		{ ID: 220926368, cost: 389, quantity: 1 },
-		{ ID: 220926370, cost: 389, quantity: 1 },
-		{ ID: 220831018, cost: 395, quantity: 1 },
-		{ ID: 220831019, cost: 395, quantity: 1 },
-		{ ID: 220831020, cost: 395, quantity: 1 },
-		{ ID: 220831021, cost: 395, quantity: 1 },
-		{ ID: 220831022, cost: 395, quantity: 1 },
-		{ ID: 220831024, cost: 395, quantity: 1 },
-		{ ID: 220537136, cost: 398, quantity: 1 },
-		{ ID: 220537137, cost: 398, quantity: 1 },
-		{ ID: 220537138, cost: 398, quantity: 1 },
-		{ ID: 220076204, cost: 399, quantity: 1 },
-		{ ID: 220076208, cost: 399, quantity: 1 },
-		{ ID: 220076205, cost: 399, quantity: 1 },
-		{ ID: 220076206, cost: 399, quantity: 1 },
-		{ ID: 220240235, cost: 450, quantity: 1 },
-		{ ID: 220240234, cost: 450, quantity: 1 },
-		{ ID: 218580130, cost: 500, quantity: 1 },
-		{ ID: 220068781, cost: 500, quantity: 1 },
-		{ ID: 220479598, cost: 500, quantity: 1 },
-		{ ID: 220383629, cost: 514, quantity: 1 },
-		{ ID: 220383627, cost: 514, quantity: 1 },
-		{ ID: 220383626, cost: 514, quantity: 1 },
-		{ ID: 220383630, cost: 514, quantity: 1 },
-		{ ID: 220383628, cost: 514, quantity: 1 },
-		{ ID: 220111179, cost: 900, quantity: 1 },
-		{ ID: 220111178, cost: 900, quantity: 1 },
-		{ ID: 219697266, cost: 1000, quantity: 1 },
-		{ ID: 220348313, cost: 1000, quantity: 1 },
-		{ ID: 220223295, cost: 1221, quantity: 1 },
-		{ ID: 218717966, cost: 1900, quantity: 1 },
-		{ ID: 218722725, cost: 1900, quantity: 1 },
-		{ ID: 218722728, cost: 1900, quantity: 1 },
-		{ ID: 218722727, cost: 1900, quantity: 1 },
-		{ ID: 218722729, cost: 1900, quantity: 1 },
-		{ ID: 218717965, cost: 1900, quantity: 1 },
-		{ ID: 218722726, cost: 1900, quantity: 1 },
-		{ ID: 219277029, cost: 2000, quantity: 1 },
-		{ ID: 219277030, cost: 2000, quantity: 1 },
-		{ ID: 217704654, cost: 2000, quantity: 1 },
-		{ ID: 219764193, cost: 2000, quantity: 1 },
-		{ ID: 219764195, cost: 2000, quantity: 1 },
-		{ ID: 219764194, cost: 2000, quantity: 1 },
-		{ ID: 219764196, cost: 2000, quantity: 1 },
-		{ ID: 219999844, cost: 2000, quantity: 1 },
-		{ ID: 219764192, cost: 2000, quantity: 1 },
-		{ ID: 219764197, cost: 2000, quantity: 1 },
-		{ ID: 219999843, cost: 2000, quantity: 1 },
-		{ ID: 219764191, cost: 2000, quantity: 1 },
-		{ ID: 217647190, cost: 2969, quantity: 1 },
-		{ ID: 217647187, cost: 2969, quantity: 1 },
-		{ ID: 217647189, cost: 2969, quantity: 1 },
-		{ ID: 217647188, cost: 2969, quantity: 1 },
-		{ ID: 217534506, cost: 3000, quantity: 1 },
-		{ ID: 217534507, cost: 3000, quantity: 1 },
-		{ ID: 217534508, cost: 3000, quantity: 1 },
-		{ ID: 217534505, cost: 3000, quantity: 1 },
-		{ ID: 217534509, cost: 3000, quantity: 1 },
+		{
+			ID: 221082251,
+			cost: 360,
+			quantity: 1,
+		},
 	],
 };
