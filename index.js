@@ -153,8 +153,26 @@ function retrieveData() {
 
 // Call retrieveData() when the extension is loaded to initialize variables
 retrieveData().then(function () {
-	let itemToLookup = 51;
-	let x = fetchPriceData(itemToLookup);
+	// let itemToLookup = 51;
+	// let bool = fetchPriceData(itemToLookup);
+	const elementsWithDataItem = document.querySelectorAll("[data-item]");
+	for (let i = 0; i < elementsWithDataItem.length; i++) {
+		const itemid = elementsWithDataItem[i].dataset.item;
+		console.log("itemid", itemid);
+		const bool = fetchPriceData(itemid);
+		const searchName = elementsWithDataItem[i].querySelector(".searchname");
+		if (bool) {
+			if (searchName) {
+				console.log("searchName", searchName);
+				searchName.style.color = "green";
+			}
+		} else {
+			if (searchName) {
+				console.log("searchName1", searchName);
+				searchName.style.color = "red";
+			}
+		}
+	}
 });
 
 async function fetchPriceData(itemid) {
@@ -185,16 +203,16 @@ async function fetchPriceData(itemid) {
 			`https://api.torn.com/market/${itemid}?selections=bazaar,itemmarket&key=${API_KEY}`
 		);
 		await response.json().then((data) => {
-			console.log("data.itemmarket[0].cost", data.itemmarket[0].cost);
-			console.log("data.bazaar[0].cost", data.bazaar[0].cost);
-			console.log("priceData[itemid]", priceData[itemid]);
+			// console.log("data.itemmarket[0].cost", data.itemmarket[0].cost);
+			// console.log("data.bazaar[0].cost", data.bazaar[0].cost);
+			// console.log("priceData[itemid]", priceData[itemid]);
 			if (data.itemmarket[0].cost < priceData[itemid]) {
 				bool = true;
 				console.log("item market cost:", data.itemmarket[0].cost);
 				console.log(`Profit: ${priceData[itemid] - data.itemmarket[0].cost}$`);
 			}
 
-			if (data.bazaar[0].cost > priceData[itemid]) {
+			if (data.bazaar[0].cost < priceData[itemid]) {
 				bool = true;
 				console.log("bazaar cost:", data.bazaar[0].cost);
 				console.log(`Profit: ${priceData[itemid] - data.bazaar[0].cost}$`);
