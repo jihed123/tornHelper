@@ -172,12 +172,12 @@ async function fetchPriceData(itemid) {
 		return;
 	}
 
-	numberOfAPIRequests++;
-	let bool = false;
+	let value = "";
 	if (priceData[itemid] === undefined) {
 		console.error("Item not found in priceData : ", itemid);
-		return;
+		return "notFound";
 	}
+	numberOfAPIRequests++;
 	try {
 		const response = await fetch(
 			`https://api.torn.com/market/${itemid}?selections=bazaar,itemmarket&key=${API_KEY}`
@@ -188,7 +188,7 @@ async function fetchPriceData(itemid) {
 			// console.log("priceData[itemid]", priceData[itemid]);
 			if (data.itemmarket != undefined) {
 				if (data.itemmarket[0].cost < priceData[itemid]) {
-					bool = true;
+					value = "profitable";
 					console.log("item market cost:", data.itemmarket[0].cost);
 					console.log(
 						`Profit: ${priceData[itemid] - data.itemmarket[0].cost}$`
@@ -197,7 +197,7 @@ async function fetchPriceData(itemid) {
 			}
 			if (data.bazaar != undefined) {
 				if (data.bazaar[0].cost < priceData[itemid]) {
-					bool = true;
+					value = "profitable";
 					console.log("bazaar cost:", data.bazaar[0].cost);
 					console.log(`Profit: ${priceData[itemid] - data.bazaar[0].cost}$`);
 				}
@@ -209,7 +209,7 @@ async function fetchPriceData(itemid) {
 
 	saveData();
 
-	return bool;
+	return value;
 }
 // Call retrieveData() when the extension is loaded to initialize variables
 retrieveData();
@@ -217,26 +217,28 @@ retrieveData();
 // let itemToLookup = 51;
 // let bool = fetchPriceData(itemToLookup);
 
-function checkIfDataItemsLoaded() {
+async function checkIfDataItemsLoaded() {
 	const elementsWithDataItem = document.querySelectorAll("[data-item]");
 	if (elementsWithDataItem.length > 0) {
-		// Call your main logic function here
-
 		if (API_KEY != "") {
 			for (let i = 0; i < elementsWithDataItem.length; i++) {
 				const itemid = elementsWithDataItem[i].dataset.item;
-
-				const bool = fetchPriceData(itemid);
 				const searchName = elementsWithDataItem[i].querySelector(".searchname");
-				if (bool) {
-					if (searchName) {
-						searchName.style.color = "green";
+				fetchPriceData(itemid).then((value) => {
+					if (value == "profitable") {
+						if (searchName) {
+							searchName.style.color = "green";
+						}
+					} else if (value == "notFound") {
+						if (searchName) {
+							searchName.style.color = "#2d2518";
+						}
+					} else {
+						if (searchName) {
+							searchName.style.color = "red";
+						}
 					}
-				} else {
-					if (searchName) {
-						searchName.style.color = "red";
-					}
-				}
+				});
 			}
 		}
 	} else {
@@ -244,6 +246,7 @@ function checkIfDataItemsLoaded() {
 		setTimeout(checkIfDataItemsLoaded, 1000); // Adjust the timeout as needed
 	}
 }
+
 checkIfDataItemsLoaded();
 // check window url
 // if (window.location.href.includes('item.php')) {
