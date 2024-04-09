@@ -3,6 +3,7 @@
 // dotenv.config();
 // const API_KEY = process.env.API_KEY;
 let API_KEY = "";
+//TODO: problem in the number of numberOfAPIRequests and saving them fetching dont add to the number /every element green
 
 const priceData = {
 	1: 50,
@@ -150,31 +151,6 @@ function retrieveData() {
 			console.error("Error retrieving data:", error);
 		});
 }
-
-// Call retrieveData() when the extension is loaded to initialize variables
-retrieveData().then(function () {
-	// let itemToLookup = 51;
-	// let bool = fetchPriceData(itemToLookup);
-	const elementsWithDataItem = document.querySelectorAll("[data-item]");
-	for (let i = 0; i < elementsWithDataItem.length; i++) {
-		const itemid = elementsWithDataItem[i].dataset.item;
-		console.log("itemid", itemid);
-		const bool = fetchPriceData(itemid);
-		const searchName = elementsWithDataItem[i].querySelector(".searchname");
-		if (bool) {
-			if (searchName) {
-				console.log("searchName", searchName);
-				searchName.style.color = "green";
-			}
-		} else {
-			if (searchName) {
-				console.log("searchName1", searchName);
-				searchName.style.color = "red";
-			}
-		}
-	}
-});
-
 async function fetchPriceData(itemid) {
 	// TODO: improve rate limiting to be more accurate
 	if (API_KEY === "") {
@@ -198,6 +174,10 @@ async function fetchPriceData(itemid) {
 
 	numberOfAPIRequests++;
 	let bool = false;
+	if (priceData[itemid] === undefined) {
+		console.error("Item not found in priceData : ", itemid);
+		return;
+	}
 	try {
 		const response = await fetch(
 			`https://api.torn.com/market/${itemid}?selections=bazaar,itemmarket&key=${API_KEY}`
@@ -206,30 +186,65 @@ async function fetchPriceData(itemid) {
 			// console.log("data.itemmarket[0].cost", data.itemmarket[0].cost);
 			// console.log("data.bazaar[0].cost", data.bazaar[0].cost);
 			// console.log("priceData[itemid]", priceData[itemid]);
-			if (data.itemmarket[0].cost < priceData[itemid]) {
-				bool = true;
-				console.log("item market cost:", data.itemmarket[0].cost);
-				console.log(`Profit: ${priceData[itemid] - data.itemmarket[0].cost}$`);
+			if (data.itemmarket != undefined) {
+				if (data.itemmarket[0].cost < priceData[itemid]) {
+					bool = true;
+					console.log("item market cost:", data.itemmarket[0].cost);
+					console.log(
+						`Profit: ${priceData[itemid] - data.itemmarket[0].cost}$`
+					);
+				}
 			}
-
-			if (data.bazaar[0].cost < priceData[itemid]) {
-				bool = true;
-				console.log("bazaar cost:", data.bazaar[0].cost);
-				console.log(`Profit: ${priceData[itemid] - data.bazaar[0].cost}$`);
+			if (data.bazaar != undefined) {
+				if (data.bazaar[0].cost < priceData[itemid]) {
+					bool = true;
+					console.log("bazaar cost:", data.bazaar[0].cost);
+					console.log(`Profit: ${priceData[itemid] - data.bazaar[0].cost}$`);
+				}
 			}
 		});
 	} catch (error) {
 		console.error("Error fetching price data:", error);
 	}
-	console.log("bool", bool);
-
-	// log more
 
 	saveData();
 
 	return bool;
 }
+// Call retrieveData() when the extension is loaded to initialize variables
+retrieveData();
 
+// let itemToLookup = 51;
+// let bool = fetchPriceData(itemToLookup);
+
+function checkIfDataItemsLoaded() {
+	const elementsWithDataItem = document.querySelectorAll("[data-item]");
+	if (elementsWithDataItem.length > 0) {
+		// Call your main logic function here
+
+		if (API_KEY != "") {
+			for (let i = 0; i < elementsWithDataItem.length; i++) {
+				const itemid = elementsWithDataItem[i].dataset.item;
+
+				const bool = fetchPriceData(itemid);
+				const searchName = elementsWithDataItem[i].querySelector(".searchname");
+				if (bool) {
+					if (searchName) {
+						searchName.style.color = "green";
+					}
+				} else {
+					if (searchName) {
+						searchName.style.color = "red";
+					}
+				}
+			}
+		}
+	} else {
+		// If data-item elements are not yet loaded, wait and check again
+		setTimeout(checkIfDataItemsLoaded, 1000); // Adjust the timeout as needed
+	}
+}
+checkIfDataItemsLoaded();
 // check window url
 // if (window.location.href.includes('item.php')) {
 
