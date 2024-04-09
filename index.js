@@ -1,6 +1,6 @@
-import fetch from "node-fetch";
-import dotenv from "dotenv";
-dotenv.config();
+// import fetch from "node-fetch";
+// import dotenv from "dotenv";
+// dotenv.config();
 // const API_KEY = process.env.API_KEY;
 let API_KEY = "";
 
@@ -127,7 +127,7 @@ function saveData() {
 
 // Function to retrieve data from browser.storage.local and initialize variables
 function retrieveData() {
-	browser.storage.local
+	return browser.storage.local
 		.get(["numberOfAPIRequests", "lastResetTime", "apiKey"])
 		.then((result) => {
 			if (result.numberOfAPIRequests !== undefined) {
@@ -142,7 +142,7 @@ function retrieveData() {
 			}
 			console.log("Retrieved data:", {
 				numberOfAPIRequests: numberOfAPIRequests,
-
+				apiKey: API_KEY,
 				lastResetTime: lastResetTime,
 			});
 		})
@@ -152,7 +152,10 @@ function retrieveData() {
 }
 
 // Call retrieveData() when the extension is loaded to initialize variables
-retrieveData();
+retrieveData().then(function () {
+	let itemToLookup = 51;
+	let x = fetchPriceData(itemToLookup);
+});
 
 async function fetchPriceData(itemid) {
 	// TODO: improve rate limiting to be more accurate
@@ -181,30 +184,34 @@ async function fetchPriceData(itemid) {
 		const response = await fetch(
 			`https://api.torn.com/market/${itemid}?selections=bazaar,itemmarket&key=${API_KEY}`
 		);
-		const data = await response.json();
+		await response.json().then((data) => {
+			console.log("data.itemmarket[0].cost", data.itemmarket[0].cost);
+			console.log("data.bazaar[0].cost", data.bazaar[0].cost);
+			console.log("priceData[itemid]", priceData[itemid]);
+			if (data.itemmarket[0].cost < priceData[itemid]) {
+				bool = true;
+				console.log("item market cost:", data.itemmarket[0].cost);
+				console.log(`Profit: ${priceData[itemid] - data.itemmarket[0].cost}$`);
+			}
 
-		if (data.itemmarket[0].cost < priceData[itemid]) {
-			bool = true;
-			console.log("item market cost:", data.itemmarket[0].cost);
-			console.log(`Profit: ${priceData[itemid] - data.itemmarket[0].cost}$`);
-		}
-
-		if (data.bazaar[0].cost > priceData[itemid]) {
-			bool = true;
-			console.log("bazaar cost:", data.bazaar[0].cost);
-			console.log(`Profit: ${priceData[itemid] - data.bazaar[0].cost}$`);
-		}
+			if (data.bazaar[0].cost > priceData[itemid]) {
+				bool = true;
+				console.log("bazaar cost:", data.bazaar[0].cost);
+				console.log(`Profit: ${priceData[itemid] - data.bazaar[0].cost}$`);
+			}
+		});
 	} catch (error) {
 		console.error("Error fetching price data:", error);
 	}
+	console.log("bool", bool);
+
+	// log more
 
 	saveData();
 
 	return bool;
 }
 
-let itemToLookup = 51;
-// fetchPriceData(itemToLookup);
 // check window url
 // if (window.location.href.includes('item.php')) {
 
