@@ -540,25 +540,6 @@ let priceData = {
 	1350: 230000,
 };
 
-// function updatePriceDataFromPage() {
-// 	const priceElements = document.querySelectorAll('.price');
-
-// 	priceElements.forEach(element => {
-// 			const id = element.id.replace('-price', '');
-// 			const sellString = element.dataset.sell.replace('$', '');
-// 			const sell = sellString.includes(',') ? parseFloat(sellString.replace(',', '')) : parseFloat(sellString);
-
-// 			// Add or update data in priceData
-// 			priceData[id] = sell;
-// 	});
-// }
-
-// // Call the function to update priceData from the new page
-// updatePriceDataFromPage();
-
-// Lookup the price of an item by its name
-
-// console.log(itemsAndPrices[itemName]); // Outputs: 10.99
 const maxAPIRequestsPerMinute = 99;
 let numberOfAPIRequests = 0;
 let lastResetTime = Date.now();
@@ -628,7 +609,7 @@ async function fetchPriceData(itemid) {
 		return;
 	}
 
-	let value = "";
+	let value = "unprofitable";
 	if (priceData[itemid] === undefined) {
 		console.error("Item not found in priceData : ", itemid);
 		return "notFound";
@@ -655,16 +636,12 @@ async function fetchPriceData(itemid) {
 						`Profit: ${priceData[itemid] - data.itemmarket[0].cost}$`
 					);
 				}
-			} else {
-				value = "notProfitable";
 			}
 			if (data.bazaar != undefined) {
 				if (data.bazaar[0].cost < priceData[itemid]) {
-					value = "profitable";
 					console.log("bazaar cost:", data.bazaar[0].cost);
 					console.log(`Profit: ${priceData[itemid] - data.bazaar[0].cost}$`);
-				} else {
-					value = "notProfitable";
+					value = "profitable";
 				}
 			}
 		});
@@ -694,11 +671,8 @@ async function checkIfDataItemsLoaded() {
 						if (searchName) {
 							searchName.style.color = "green";
 						}
-						if (value == "notProfitable") {
-							if (searchName) {
-								searchName.style.color = "red";
-							}
-						}
+					} else if (value == "unprofitable") {
+						searchName.style.color = "red";
 					}
 				});
 			}
