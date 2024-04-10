@@ -8,7 +8,7 @@ let margin = 200;
 // TODO: make it so it will check if i click on the item category it will make a check without the need to refresh the page
 // TODO: make it give the user the option to set the amount of profit minimum to be considered profitable
 // TODO: add indication of how much profit is made on each listing on the market/bazaar
-// TODO: check the current amount of money to filter by items that the user can afford
+// TODO: check the current amount of money to filter by items that the user can afford by checking the user's money and the item price ( without api call since it's already on the page)
 
 const priceData = {
 	1: 50,
