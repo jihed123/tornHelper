@@ -4,7 +4,9 @@
 // const API_KEY = process.env.API_KEY;
 console.log("content script loaded");
 let API_KEY = "";
-//TODO: problem in the number of numberOfAPIRequests and saving them fetching dont add to the number /every element green
+// TODO: make it so it will check if i click on the item category it will make a check without the need to refresh the page
+// TODO: make it give the user the option to set the amount of profit minimum to be considered profitable
+// TODO: add indication of how much profit is made on each listing on the market/bazaar
 
 let priceData = {
 	1: 50,
@@ -544,8 +546,6 @@ let priceData = {
 const maxAPIRequestsPerMinute = 99;
 let numberOfAPIRequests = 0;
 let lastResetTime = Date.now();
-// Function to save data to storage.local
-// Function to save data to browser.storage.local
 
 // Function to retrieve data from browser.storage.local and initialize variables
 function retrieveData() {
@@ -646,8 +646,6 @@ async function fetchPriceData(itemid) {
 }
 // Call retrieveData() when the extension is loaded to initialize variables
 retrieveData();
-// let itemToLookup = 51;
-// let bool = fetchPriceData(itemToLookup);
 
 async function checkIfDataItemsLoaded() {
 	const elementsWithDataItem = document.querySelectorAll("[data-item]");
