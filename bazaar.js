@@ -532,7 +532,7 @@ const priceData = {
 	1349: 95000,
 	1350: 230000,
 };
-let margin = 100;
+let margin = 200;
 async function retrieveData() {
 	let result = await browser.storage.local.get(["margin"]);
 	if (result.margin !== undefined) {
@@ -546,35 +546,35 @@ async function retrieveAndCheckDataItems() {
 }
 async function checkIfDataItemsLoaded() {
 	let imgElements = document.getElementsByTagName("img");
-	if (imgElements.length > 2) {
-		for (let i = 2; i < imgElements.length; i++) {
-			let src = imgElements[i].src;
-			let match = src.match(/\/images\/items\/(\d+)/);
-			if (match) {
-				let itemId = match[1];
-				let itemElement = imgElements[i].parentNode.parentNode.parentNode;
-				if (itemElement) {
-					let itemPriceElement = itemElement.children[1].children[1];
-					let itemPrice = Number(
-						itemPriceElement.textContent.replace(/[^0-9.-]+/g, "")
-					);
-					if (
-						priceData[itemId] &&
-						itemPrice < priceData[itemId] &&
-						priceData[itemId] - itemPrice > margin
-					) {
-						itemPriceElement.style.color = "green";
-					} else if (itemPrice > priceData[itemId] || !priceData[itemId]) {
-						itemPriceElement.style.color = "red";
-					}
+	// if (imgElements.length > 2) {
+	for (let i = 2; i < imgElements.length; i++) {
+		let src = imgElements[i].src;
+		let match = src.match(/\/images\/items\/(\d+)/);
+		if (match) {
+			let itemId = match[1];
+			let itemElement = imgElements[i].parentNode.parentNode.parentNode;
+			if (itemElement) {
+				let itemPriceElement = itemElement.children[1].children[1];
+				let itemPrice = Number(
+					itemPriceElement.textContent.replace(/[^0-9.-]+/g, "")
+				);
+				if (
+					priceData[itemId] &&
+					itemPrice < priceData[itemId] &&
+					priceData[itemId] - itemPrice > margin
+				) {
+					itemPriceElement.style.color = "green";
+				} else if (itemPrice > priceData[itemId] || !priceData[itemId]) {
+					itemPriceElement.style.color = "red";
 				}
 			}
 		}
-	} else {
-		// If data-item elements are not yet loaded, wait and check again
-		setTimeout(checkIfDataItemsLoaded, 1000);
 	}
+	// } else {
+	// If data-item elements are not yet loaded, wait and check again
+	setTimeout(checkIfDataItemsLoaded, 1000);
+	// }
 }
 retrieveAndCheckDataItems();
 // TODO: add a way to hide all items that are above the margin
-// TODO: check again if the number of items is above a threshold for the rest of the page to be loaded
+// TODO: check again if the number of items is above a threshold for the rest of the page to be loaded -- for now it will just loop
