@@ -2,6 +2,7 @@
 // import dotenv from "dotenv";
 // dotenv.config();
 // const API_KEY = process.env.API_KEY;
+console.log("content script loaded");
 let API_KEY = "";
 //TODO: problem in the number of numberOfAPIRequests and saving them fetching dont add to the number /every element green
 
@@ -545,23 +546,6 @@ let numberOfAPIRequests = 0;
 let lastResetTime = Date.now();
 // Function to save data to storage.local
 // Function to save data to browser.storage.local
-function saveData() {
-	console.log(numberOfAPIRequests, lastResetTime);
-	browser.storage.local
-		.set({
-			numberOfAPIRequests: numberOfAPIRequests,
-			lastResetTime: lastResetTime,
-		})
-		.then(() => {
-			console.log("Data saved:", {
-				numberOfAPIRequests: numberOfAPIRequests,
-				lastResetTime: lastResetTime,
-			});
-		})
-		.catch((error) => {
-			console.error("Error saving data:", error);
-		});
-}
 
 // Function to retrieve data from browser.storage.local and initialize variables
 function retrieveData() {
@@ -649,13 +633,19 @@ async function fetchPriceData(itemid) {
 		console.error("Error fetching price data:", error);
 	}
 
-	saveData();
+	const dataToSave = {
+		numberOfAPIRequests: numberOfAPIRequests,
+		lastResetTime: lastResetTime,
+		// Add other data properties as needed
+	};
+
+	// Send a message to the background script/page to save the data
+	browser.runtime.sendMessage({ action: "saveData", data: dataToSave });
 
 	return value;
 }
 // Call retrieveData() when the extension is loaded to initialize variables
 retrieveData();
-
 // let itemToLookup = 51;
 // let bool = fetchPriceData(itemToLookup);
 
@@ -687,19 +677,19 @@ checkIfDataItemsLoaded();
 // check window url
 // if (window.location.href.includes('item.php')) {
 
-const dataExemple = {
-	bazaar: [
-		{
-			ID: 46813022,
-			cost: 800,
-			quantity: 3,
-		},
-	],
-	itemmarket: [
-		{
-			ID: 221082251,
-			cost: 360,
-			quantity: 1,
-		},
-	],
-};
+// const dataExemple = {
+// 	bazaar: [
+// 		{
+// 			ID: 46813022,
+// 			cost: 800,
+// 			quantity: 3,
+// 		},
+// 	],
+// 	itemmarket: [
+// 		{
+// 			ID: 221082251,
+// 			cost: 360,
+// 			quantity: 1,
+// 		},
+// 	],
+// };
